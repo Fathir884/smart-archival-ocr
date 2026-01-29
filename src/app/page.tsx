@@ -301,7 +301,7 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <FileUpload onFileSelect={handleFileSelect} />
+              <FileUpload onFileSelect={handleFileSelect} disabled={isProcessing} />
             )}
 
             {!isProcessing && (

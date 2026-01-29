@@ -8,9 +8,10 @@ import { cn } from "@/lib/utils";
 
 interface FileUploadProps {
     onFileSelect: (file: File) => void;
+    disabled?: boolean;
 }
 
-export function FileUpload({ onFileSelect }: FileUploadProps) {
+export function FileUpload({ onFileSelect, disabled = false }: FileUploadProps) {
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
 
@@ -36,7 +37,8 @@ export function FileUpload({ onFileSelect }: FileUploadProps) {
             'image/*': ['.png', '.jpg', '.jpeg', '.webp']
         },
         maxFiles: 1,
-        multiple: false
+        multiple: false,
+        disabled
     });
 
     return (
@@ -52,8 +54,9 @@ export function FileUpload({ onFileSelect }: FileUploadProps) {
                         <div
                             {...getRootProps()}
                             className={cn(
-                                "relative group cursor-pointer flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-2xl transition-all duration-300 ease-out p-6",
-                                isDragActive
+                                "relative group flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-2xl transition-all duration-300 ease-out p-6",
+                                disabled ? "opacity-50 cursor-not-allowed border-white/10 bg-white/5" : "cursor-pointer",
+                                isDragActive && !disabled
                                     ? "border-accent bg-accent/5 scale-[1.02]"
                                     : "border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/30"
                             )}

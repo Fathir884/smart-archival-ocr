@@ -101,7 +101,7 @@ export default function TestOCR() {
                         <ExtractionResult
                             data={scannedData}
                             onSave={() => alert("Simpan ke Sheets tidak tersedia di test mode. Gunakan halaman utama (/) dengan login Google.")}
-                            onReset={() => setScannedData(null)}
+                            onCancel={() => setScannedData(null)}
                         />
                     </motion.div>
                 )}

@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Smart Archival OCR - MBKM Project Prototype
 
-## Getting Started
+Aplikasi ini adalah prototype untuk sistem digitalisasi arsip fisik ke Google Spreadsheet menggunakan AI.
 
-First, run the development server:
+## Fitur Utama (Prototype)
+1.  **Context-Aware**: Mendeteksi kolom dari Spreadsheet secara dinamis.
+2.  **Flexible Upload**: Drag & Drop dokumen fisik.
+3.  **Mock AI Processing**: Simulasi ekstraksi data cerdas (karena belum ada API Key Gemini asli).
+4.  **Integration**: Simulasi koneksi ke Google Spreadsheet.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Cara Menjalankan
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1.  Pastikan Node.js sudah terinstall.
+2.  Buka terminal di folder ini.
+3.  Install dependencies (jika belum):
+    ```bash
+    npm install
+    ```
+4.  Jalankan server development:
+    ```bash
+    npm run dev
+    ```
+5.  Buka `http://localhost:3000` di browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Panduan Demo
+1.  Di halaman login, klik **"Masuk sebagai Demo / Tamu"** (teks kecil di bawah tombol Google).
+2.  Di kolom Link Spreadsheet, masukkan link bebas (contoh: `https://docs.google.com/XXX`).
+3.  Klik **Hubungkan**. Sistem akan mensimulasikan pengambilan header kolom.
+4.  Upload gambar sample.
+5.  Sistem akan "berpikir" (simulasi AI) dan menampilkan hasil ekstraksi.
+6.  Anda bisa mengedit hasil sebelum klik **Simpan**.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Catatan Teknis
+-   File konfigurasi mock ada di `.env.local`.
+-   Logika simulasi AI ada di `src/app/api/process-document/route.ts`.
+-   Untuk mengubah menjadi aplikasi nyata, Anda perlu memasukkan API Key Google Gemini dan setup OAuth Google Cloud Platform yang sesungguhnya.

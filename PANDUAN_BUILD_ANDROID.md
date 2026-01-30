@@ -21,43 +21,29 @@
 
 ## 🚀 **Cara Build APK (Step-by-Step)**
 
-### **Step 1: Build Next.js Production**
+### **Step 1: Pastikan Konfigurasi Benar**
+Saya sudah setting `capacitor.config.ts` kamu untuk mengarah ke:  
+`https://smart-archival-ocr-y5x2.vercel.app/`
+
+Ini artinya:
+- Kamu **TIDAK PERLU** `npm run build` setiap kali update kode.
+- Cukup push ke GitHub -> Vercel update -> **Aplikasi di HP otomatis update!** (Magic! ✨)
+
+### **Step 2: Buka Android Studio**
+Jalankan perintah ini di terminal VS Code:
 ```bash
-npm run build
+npx cap open android
 ```
-Ini akan:
-- Compile Next.js app
-- Export ke folder `out/`
-- Siap untuk di-wrap ke Android
+Atau buka manual Android Studio dan arahkan ke folder `android` di dalam project ini.
 
-### **Step 2: Sync ke Capacitor Android**
-```bash
-npm run android:sync
-```
-Ini akan:
-- Copy file dari `out/` ke folder `android/app/src/main/assets/public`
-- Update konfigurasi Android
+### **Step 3: Build APK**
+1. Di Android Studio, tunggu proses **Gradle Sync** selesai (lihat loading bar di bawah).
+2. Klik menu **Build** > **Build Bundle(s) / APK(s)** > **Build APK(s)**.
+3. Tunggu sampai muncul notifikasi "Build APK(s): APK(s) generated successfully".
+4. Klik **locate** pada notifikasi tersebut.
+5. File `app-debug.apk` siap dipindahkan ke HP kamu!
 
-### **Step 3: Buka Android Studio**
-```bash
-npm run android:open
-```
-Atau manual:
-- Buka Android Studio
-- **File** → **Open**
-- Pilih folder `android/` di project kamu
-
-### **Step 4: Build APK di Android Studio**
-
-#### **Opsi A: Debug APK (Cepat, bisa langsung install)**
-1. Di Android Studio, klik menu **Build**
-2. Pilih **Build Bundle(s) / APK(s)**
-3. Klik **Build APK(s)**
-4. Tunggu build selesai (~2-5 menit)
-5. APK tersimpan di:
-   ```
-   android/app/build/outputs/apk/debug/app-debug.apk
-   ```
+*(Lokasi file: `android/app/build/outputs/apk/debug/app-debug.apk`)*
 
 #### **Opsi B: Release APK (Production, perlu signing)**
 1. **Generate Signing Key** (sekali saja):

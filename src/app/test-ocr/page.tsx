@@ -15,7 +15,10 @@ export default function TestOCR() {
     // Default headers untuk test
     const headers = ["NO", "NAMA", "NO REG", "BIDANG", "KUALIFIKASI", "TEMPAT, TANGGAL, BULAN, TAHUN"];
 
-    const handleFileSelect = async (file: File) => {
+    const handleFileSelect = async (files: File[]) => {
+        if (files.length === 0) return;
+        const file = files[0]; // Just take the first one for testing
+
         setIsProcessing(true);
         setProgress(0);
         setScannedData(null);

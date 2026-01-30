@@ -46,8 +46,8 @@ ${headers.map((h: string, i: number) => `${i + 1}. ${h}`).join('\n')}
         }
 
         // Call Gemini API directly using v1beta
-        // Trying 'latest' alias which is often more stable for free tier
-        const model = "gemini-1.5-flash-latest";
+        // Using explicit version 002 which is the current stable release
+        const model = "gemini-1.5-flash-002";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
         const apiResponse = await fetch(apiUrl, {

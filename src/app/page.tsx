@@ -165,7 +165,7 @@ export default function Home() {
       {/* Creator Info (Top Left) */}
       <div className="absolute top-6 left-6 flex items-center gap-2 z-20">
         <div className="glass px-4 py-2 rounded-full border border-white/10">
-          <span className="text-sm text-white/60">Created by <span className="text-white font-medium">Fathir Ramadhan</span> <span className="text-xs text-yellow-400 ml-1 border border-yellow-500/30 px-1 rounded">v2.3 (PRO Model)</span></span>
+          <span className="text-sm text-white/60">Created by <span className="text-white font-medium">Fathir Ramadhan</span> <span className="text-xs text-blue-400 ml-1 border border-blue-500/30 px-1 rounded">v2.4 (Stable Fix)</span></span>
         </div>
       </div>
 

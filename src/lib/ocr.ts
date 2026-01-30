@@ -28,19 +28,25 @@ export async function performGeminiOCR(
 
         if (onProgress) onProgress(80);
 
-        const result = await response.json();
+        let result;
+        try {
+            result = await response.json();
+        } catch (syntaxError) {
+            throw new Error(`Failed to parse server response. Status: ${response.status}. Text: ${response.statusText}`);
+        }
 
         if (!response.ok || !result.success) {
-            throw new Error(result.error || result.details || 'Failed to process document');
+            throw new Error(result.error || result.details || `Server Error: ${response.status} ${response.statusText}`);
         }
 
         if (onProgress) onProgress(100);
 
-        return result.data; // This is now Record<string, string>[]
+        return result.data;
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Gemini OCR Error:", error);
-        throw new Error(error instanceof Error ? error.message : "Failed to process document with Gemini Vision. Please check your API key and try again.");
+        // Throw the raw message to avoid masking it with generic text
+        throw new Error(error.message || String(error) || "Unknown error occurred");
     }
 }
 

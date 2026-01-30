@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession, signIn, signOut } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, FileSpreadsheet, Loader2, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,13 @@ import { performGeminiOCR } from "@/lib/ocr";
 
 export default function Home() {
   const { data: session } = useSession();
+
+  useEffect(() => {
+    if ((session as any)?.error === "RefreshAccessTokenError") {
+      signIn("google");
+    }
+  }, [session]);
+
   const [demoSession, setDemoSession] = useState<{ user: { name: string; email: string; image: string | null } } | null>(null);
 
   // Combine real session or demo session
@@ -117,6 +124,13 @@ export default function Home() {
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse delay-700" />
 
+      {/* Creator Info (Top Left) */}
+      <div className="absolute top-6 left-6 flex items-center gap-2 z-20">
+        <div className="glass px-4 py-2 rounded-full border border-white/10">
+          <span className="text-sm text-white/60">Created by <span className="text-white font-medium">Fathir Ramadhan</span></span>
+        </div>
+      </div>
+
       {/* Header / User Info */}
       {activeSession && (
         <div className="absolute top-6 right-6 flex items-center gap-4 z-20">
@@ -141,11 +155,7 @@ export default function Home() {
         transition={{ duration: 0.8 }}
         className="text-center max-w-3xl z-10 space-y-6 mb-8"
       >
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <span className="px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-semibold tracking-wider uppercase">
-            MBKM Project • AI Powered
-          </span>
-        </div>
+
 
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
           Arsip Fisik ke <br />

@@ -11,18 +11,25 @@ interface FileUploadProps {
     disabled?: boolean;
 }
 
+import { CameraCapture } from "@/components/camera-capture";
+
 export function FileUpload({ onFileSelect, disabled = false }: FileUploadProps) {
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         if (acceptedFiles?.[0]) {
-            const selectedFile = acceptedFiles[0];
-            setFile(selectedFile);
-            setPreview(URL.createObjectURL(selectedFile));
-            onFileSelect(selectedFile);
+            handleFile(acceptedFiles[0]);
         }
     }, [onFileSelect]);
+
+    const handleFile = (selectedFile: File) => {
+        setFile(selectedFile);
+        setPreview(URL.createObjectURL(selectedFile));
+        onFileSelect(selectedFile);
+        setIsCameraOpen(false);
+    };
 
     const removeFile = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -119,6 +126,29 @@ export function FileUpload({ onFileSelect, disabled = false }: FileUploadProps) 
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+
+            {
+                !file && !disabled && (
+                    <div className="mt-4 flex justify-center">
+                        <button
+                            onClick={() => setIsCameraOpen(true)}
+                            className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors bg-primary/10 px-4 py-2 rounded-full border border-primary/20 hover:bg-primary/20"
+                        >
+                            <Camera className="w-4 h-4" />
+                            <span>Scan via Kamera</span>
+                        </button>
+                    </div>
+                )
+            }
+
+            <AnimatePresence>
+                {isCameraOpen && (
+                    <CameraCapture
+                        onCapture={handleFile}
+                        onClose={() => setIsCameraOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
+        </div >
     );
 }

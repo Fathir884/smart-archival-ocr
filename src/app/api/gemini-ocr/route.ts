@@ -46,8 +46,8 @@ ${headers.map((h: string, i: number) => `${i + 1}. ${h}`).join('\n')}
         }
 
         // Call Gemini API directly using v1beta
-        // Fallback to legacy stable vision model as 1.5 series is unavailable for this key
-        const model = "gemini-pro-vision";
+        // Using Gemini 2.5 Flash as requested (Year 2026 Standard)
+        const model = "gemini-2.5-flash";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
         const apiResponse = await fetch(apiUrl, {

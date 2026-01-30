@@ -25,7 +25,8 @@ export default function TestOCR() {
 
         try {
             const extractedData = await performGeminiOCR(file, headers, (p) => setProgress(Math.round(p)));
-            setScannedData(extractedData);
+            // Test mode only shows first result for now
+            setScannedData(extractedData[0] || null);
         } catch (error) {
             console.error(error);
             alert("Gagal memproses dokumen. Pastikan API Key Gemini sudah diisi di .env.local dan gambar jelas.");

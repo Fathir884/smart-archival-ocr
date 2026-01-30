@@ -101,7 +101,12 @@ export default function Home() {
           }
         }));
 
-        const validResults = chunkResults.filter(r => r !== null) as Record<string, string>[];
+        // chunkResults is (Record<string, string>[] | null)[]
+        // We need to flatten it.
+        const validResults = chunkResults
+          .filter(r => r !== null)
+          .flat() as Record<string, string>[];
+
         results.push(...validResults);
 
         setProcessedFiles(prev => prev + chunk.length);
@@ -109,7 +114,7 @@ export default function Home() {
       }
 
       if (results.length > 0) {
-        setScannedData(results.length === 1 ? results[0] : results);
+        setScannedData(results); // Now strictly array
       } else {
         alert("Gagal memproses semua dokumen.");
       }

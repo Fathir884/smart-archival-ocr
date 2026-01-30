@@ -9,7 +9,7 @@ export async function performGeminiOCR(
     file: File,
     headers: string[],
     onProgress?: (progress: number) => void
-): Promise<Record<string, string>> {
+): Promise<Record<string, string>[]> {
     try {
         if (onProgress) onProgress(10);
 
@@ -36,7 +36,7 @@ export async function performGeminiOCR(
 
         if (onProgress) onProgress(100);
 
-        return result.data;
+        return result.data; // This is now Record<string, string>[]
 
     } catch (error) {
         console.error("Gemini OCR Error:", error);

@@ -19,30 +19,27 @@ export async function POST(request: Request) {
         const mimeType = file.type;
 
         // Prepare the prompt
-        const prompt = `You are an advanced OCR system specialized in extracting data from Indonesian certificates and documents.
+        const prompt = `You are an advanced OCR system specialized in extracting structured data from images, including tables, lists, and multiple documents.
 
-**TASK**: Extract the following fields from this certificate image:
+**TASK**: Extract data from the image into a JSON Array.
+The target structure for EACH item in the array is based on these headers:
 ${headers.map((h: string, i: number) => `${i + 1}. ${h}`).join('\n')}
 
 **INSTRUCTIONS**:
-- Read the text carefully, even if there's decorative background (batik patterns, watermarks)
-- For bilingual certificates (Indonesian + English), prefer the Indonesian text
-- Return ONLY valid JSON in this exact format:
-{
-  "${headers[0]}": "extracted value here",
-  "${headers[1]}": "extracted value here"
-}
+1. **Analyze the Image Structure**:
+   - If the image contains a **Table**, extract each row as a separate item.
+   - If the image contains **Multiple Documents** (e.g. 6 certificates arranged in a grid), extract each document as a separate item.
+   - If the image contains a **Single Document**, extract it as a single item in the array.
 
-**IMPORTANT RULES**:
-1. If a field is not found, use empty string ""
-2. For "Nama" or "Penerima": Use the person's full name in UPPERCASE (e.g., "WIDIA PERMANA")
-3. For "No" or "Nomor": Include all digits and separators (e.g., "910100 2912 0000142 2016")
-4. For "No Reg": Include prefix if present (e.g., "PRP 107 000105 2016")
-5. For "Bidang" or "Kualifikasi": Include full Indonesian text (ignore English translation)
-6. For dates: Use format "Jakarta, 01 Desember 2016" (City, DD Month YYYY)
-7. Do NOT include any markdown formatting, explanations, or extra text - ONLY the JSON object
+2. **Map Data to Headers**:
+   - intelligently map the text found in the image to the most appropriate header.
+   - If a specific header field is not found in a row/document, set it to an empty string "".
 
-Extract the data now:`;
+3. **Format**:
+   - Return ONLY a valid JSON Array: \`[ {"header1": "val1"}, {"header1": "val2"} ]\`
+   - Do NOT include markdown code blocks (like \`\`\`json). Just the raw JSON string.
+
+**content**:`;
 
         // Call Gemini API directly using v1beta with Gemini 2.5 Flash (confirmed available)
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
@@ -77,23 +74,32 @@ Extract the data now:`;
 
         // Parse JSON from response
         let jsonText = text.trim();
-        if (jsonText.startsWith('```json')) {
-            jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-        } else if (jsonText.startsWith('```')) {
-            jsonText = jsonText.replace(/```\n?/g, '');
+        // Remove markdown formatting if present
+        jsonText = jsonText.replace(/^```json\s*/, "").replace(/^```\s*/, "").replace(/\s*```$/, "");
+
+        let parsedResult;
+        try {
+            parsedResult = JSON.parse(jsonText);
+        } catch (e) {
+            console.error("Failed to parse Gemini JSON:", jsonText);
+            throw new Error("Failed to parse OCR result. AI returned invalid JSON.");
         }
 
-        const extractedData = JSON.parse(jsonText);
+        // Ensure result is always an array
+        const resultsArray = Array.isArray(parsedResult) ? parsedResult : [parsedResult];
 
-        // Ensure all headers are present
-        const data: Record<string, string> = {};
-        headers.forEach((h: string) => {
-            data[h] = extractedData[h] || "";
+        // Normalize data to ensure all headers exist
+        const normalizedData: Record<string, string>[] = resultsArray.map((item: any) => {
+            const rowData: Record<string, string> = {};
+            headers.forEach((h: string) => {
+                rowData[h] = item[h] ? String(item[h]) : "";
+            });
+            return rowData;
         });
 
         return NextResponse.json({
             success: true,
-            data
+            data: normalizedData // Now always returns an array
         });
 
     } catch (error) {

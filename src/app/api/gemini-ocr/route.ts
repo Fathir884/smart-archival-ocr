@@ -41,8 +41,14 @@ ${headers.map((h: string, i: number) => `${i + 1}. ${h}`).join('\n')}
 
 **content**:`;
 
-        // Call Gemini API directly using v1beta with Gemini 1.5 Flash (Standard)
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+        if (!process.env.GEMINI_API_KEY) {
+            return NextResponse.json({ error: "Server Configuration Error: GEMINI_API_KEY is missing." }, { status: 500 });
+        }
+
+        // Call Gemini API directly using v1beta
+        // Using gemini-1.5-flash-latest to ensure we hit a valid alias, or fallback to gemini-1.5-flash
+        const model = "gemini-1.5-flash";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
         const apiResponse = await fetch(apiUrl, {
             method: 'POST',
@@ -66,10 +72,16 @@ ${headers.map((h: string, i: number) => `${i + 1}. ${h}`).join('\n')}
 
         if (!apiResponse.ok) {
             const errorText = await apiResponse.text();
-            throw new Error(`Gemini API Error (${apiResponse.status}): ${errorText}`);
+            console.error(`Gemini API Error (${apiResponse.status}):`, errorText);
+            throw new Error(`Gemini API returned ${apiResponse.status}: ${errorText}`);
         }
 
         const apiResult = await apiResponse.json();
+
+        if (!apiResult.candidates || apiResult.candidates.length === 0) {
+            throw new Error("Gemini returned no candidates. The image might be blocked or unclear.");
+        }
+
         const text = apiResult.candidates[0].content.parts[0].text;
 
         // Parse JSON from response
@@ -99,14 +111,15 @@ ${headers.map((h: string, i: number) => `${i + 1}. ${h}`).join('\n')}
 
         return NextResponse.json({
             success: true,
-            data: normalizedData // Now always returns an array
+            data: normalizedData
         });
 
     } catch (error) {
         console.error("Gemini OCR Error:", error);
+        // Return the actual error message to the client for simpler debugging
         return NextResponse.json({
-            error: "Failed to process document with Gemini Vision. Please check your API key and try again.",
-            details: error instanceof Error ? error.message : "Unknown error"
+            error: error instanceof Error ? error.message : "Unknown error during OCR processing",
+            details: error instanceof Error ? error.message : undefined
         }, { status: 500 });
     }
 }

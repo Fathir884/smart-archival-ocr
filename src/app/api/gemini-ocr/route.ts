@@ -41,8 +41,8 @@ ${headers.map((h: string, i: number) => `${i + 1}. ${h}`).join('\n')}
 
 **content**:`;
 
-        // Call Gemini API directly using v1beta with Gemini 2.5 Flash (confirmed available)
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+        // Call Gemini API directly using v1beta with Gemini 1.5 Flash (Standard)
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
         const apiResponse = await fetch(apiUrl, {
             method: 'POST',

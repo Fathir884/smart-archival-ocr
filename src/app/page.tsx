@@ -88,6 +88,8 @@ export default function Home() {
       // Gemini has high limits but Vercel has timeout.
       // We will do 3 at a time.
 
+      const errors: string[] = [];
+
       const chunkSize = 3;
       for (let i = 0; i < files.length; i += chunkSize) {
         const chunk = files.slice(i, i + chunkSize);
@@ -97,7 +99,9 @@ export default function Home() {
             return await performGeminiOCR(file, headers);
           } catch (e) {
             console.error("Error processing file", file.name, e);
-            return null; // Handle failure gracefully
+            const msg = e instanceof Error ? e.message : "Unknown error";
+            errors.push(`${file.name}: ${msg}`);
+            return null;
           }
         }));
 
@@ -116,7 +120,8 @@ export default function Home() {
       if (results.length > 0) {
         setScannedData(results); // Now strictly array
       } else {
-        alert("Gagal memproses semua dokumen.");
+        console.error("Batch processing errors:", errors);
+        alert(`Gagal memproses dokumen.\nError:\n${errors.join('\n')}`);
       }
 
     } catch (error) {

@@ -92,7 +92,7 @@ export function FileUpload({ onFileSelect, disabled = false }: FileUploadProps) 
                         className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors bg-primary/10 px-4 py-2 rounded-full border border-primary/20 hover:bg-primary/20"
                     >
                         <Camera className="w-4 h-4" />
-                        <span>Scan via Kamera</span>
+                        <span>Scan Dokumen (PDF & Image)</span>
                     </button>
                 </div>
             )}

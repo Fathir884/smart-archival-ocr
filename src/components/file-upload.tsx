@@ -36,7 +36,8 @@ export function FileUpload({ onFileSelect, disabled = false }: FileUploadProps) 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: {
-            'image/*': ['.png', '.jpg', '.jpeg', '.webp']
+            'image/*': ['.png', '.jpg', '.jpeg', '.webp'],
+            'application/pdf': ['.pdf']
         },
         maxFiles: 10,
         multiple: true,
@@ -70,10 +71,10 @@ export function FileUpload({ onFileSelect, disabled = false }: FileUploadProps) 
 
                         <div className="text-center space-y-2">
                             <h3 className="text-lg font-semibold text-white group-hover:text-accent transition-colors">
-                                {isDragActive ? "Lepaskan file di sini" : "Upload Dokumen Arsip"}
+                                {isDragActive ? "Lepaskan file di sini" : "Upload Dokumen & PDF"}
                             </h3>
                             <p className="text-sm text-muted-foreground px-4">
-                                Drag & drop atau klik untuk memilih file (Bisa banyak sekaligus)
+                                Drag & drop atau klik untuk memilih file (Gambar atau PDF)
                             </p>
                         </div>
 

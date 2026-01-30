@@ -19,17 +19,17 @@ export async function POST(request: Request) {
         const mimeType = file.type;
 
         // Prepare the prompt
-        const prompt = `You are an advanced OCR system specialized in extracting structured data from images, including tables, lists, and multiple documents.
+        const prompt = `You are an advanced OCR system specialized in extracting structured data from files, including images and PDF documents.
 
-**TASK**: Extract data from the image into a JSON Array.
+**TASK**: Extract data from the file into a JSON Array.
 The target structure for EACH item in the array is based on these headers:
 ${headers.map((h: string, i: number) => `${i + 1}. ${h}`).join('\n')}
 
 **INSTRUCTIONS**:
-1. **Analyze the Image Structure**:
-   - If the image contains a **Table**, extract each row as a separate item.
-   - If the image contains **Multiple Documents** (e.g. 6 certificates arranged in a grid), extract each document as a separate item.
-   - If the image contains a **Single Document**, extract it as a single item in the array.
+1. **Analyze the File Structure**:
+   - If the file is a **Table**, extract each row as a separate item.
+   - If the file contains **Multiple Documents** (e.g. multiple certificates pages or grid), extract each document as a separate item.
+   - If the file contains a **Single Document**, extract it as a single item in the array.
 
 2. **Map Data to Headers**:
    - intelligently map the text found in the image to the most appropriate header.

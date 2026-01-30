@@ -36,7 +36,18 @@ export async function POST(request: Request) {
         const headers = headerRes.data.values?.[0] || [];
 
         // 2. Map data object to row array based on headers
-        const rowValues = headers.map(header => data[header] || "");
+        let values: string[][] = [];
+
+        if (Array.isArray(data)) {
+            // Handle Array of Data (Batch)
+            values = data.map((item: any) => {
+                return headers.map(header => item[header] || "");
+            });
+        } else {
+            // Handle Single Object (Legacy)
+            const rowValues = headers.map(header => data[header] || "");
+            values = [rowValues];
+        }
 
         // 3. Append to Sheet
         await sheets.spreadsheets.values.append({
@@ -44,7 +55,7 @@ export async function POST(request: Request) {
             range: "A1", // Append after the last row
             valueInputOption: "USER_ENTERED",
             requestBody: {
-                values: [rowValues],
+                values: values,
             },
         });
 

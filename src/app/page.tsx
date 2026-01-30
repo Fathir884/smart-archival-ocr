@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { FileUpload } from "@/components/file-upload";
 import { ExtractionResult } from "@/components/extraction-result";
 import { performGeminiOCR } from "@/lib/ocr";
+import { BatchExtractionResult } from "@/components/batch-extraction-result";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -32,7 +33,7 @@ export default function Home() {
   const [sheetConnected, setSheetConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [scannedData, setScannedData] = useState<Record<string, string> | null>(null);
+  const [scannedData, setScannedData] = useState<Record<string, string>[] | Record<string, string> | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
 
 
@@ -70,35 +71,63 @@ export default function Home() {
 
 
   const [progress, setProgress] = useState(0);
-  const [rawOCRText, setRawOCRText] = useState("");
+  const [totalFiles, setTotalFiles] = useState(0);
+  const [processedFiles, setProcessedFiles] = useState(0);
 
-  const handleFileSelect = async (file: File) => {
+  const handleFileSelect = async (files: File[]) => {
     setIsProcessing(true);
     setProgress(0);
-    setRawOCRText("");
+    setTotalFiles(files.length);
+    setProcessedFiles(0);
+
+    // If single file, use legacy flow or just treat as batch of 1. Treating as batch is cleaner now.
+    const results: Record<string, string>[] = [];
 
     try {
-      // Use Gemini Vision API for direct structured extraction
-      const extractedData = await performGeminiOCR(file, headers, (p) => setProgress(Math.round(p)));
+      // Process files sequentially or in small parallel batches to avoid rate limits
+      // Gemini has high limits but Vercel has timeout.
+      // We will do 3 at a time.
 
-      // Store raw JSON for debug purposes
-      setRawOCRText(JSON.stringify(extractedData, null, 2));
+      const chunkSize = 3;
+      for (let i = 0; i < files.length; i += chunkSize) {
+        const chunk = files.slice(i, i + chunkSize);
 
-      setScannedData(extractedData);
+        const chunkResults = await Promise.all(chunk.map(async (file) => {
+          try {
+            return await performGeminiOCR(file, headers);
+          } catch (e) {
+            console.error("Error processing file", file.name, e);
+            return null; // Handle failure gracefully
+          }
+        }));
+
+        const validResults = chunkResults.filter(r => r !== null) as Record<string, string>[];
+        results.push(...validResults);
+
+        setProcessedFiles(prev => prev + chunk.length);
+        setProgress(Math.round(((i + chunk.length) / files.length) * 100));
+      }
+
+      if (results.length > 0) {
+        setScannedData(results.length === 1 ? results[0] : results);
+      } else {
+        alert("Gagal memproses semua dokumen.");
+      }
+
     } catch (error) {
       console.error(error);
-      alert("Gagal memproses dokumen. Pastikan API Key Gemini sudah diisi di .env.local dan gambar jelas.");
+      alert("Gagal memproses dokumen.");
     } finally {
       setIsProcessing(false);
       setProgress(0);
     }
   };
 
-  const handleSaveToSheet = async (data: Record<string, string>) => {
+  const handleSaveToSheet = async (data: Record<string, string> | Record<string, string>[]) => {
     try {
       const res = await fetch("/api/sheet/save", {
         method: "POST",
-        body: JSON.stringify({ url, data }), // Send URL and Data
+        body: JSON.stringify({ url, data }), // Send URL and Data (object or array)
         headers: { "Content-Type": "application/json" },
       });
       const result = await res.json();
@@ -106,7 +135,6 @@ export default function Home() {
       if (result.success) {
         alert("Data BERHASIL disimpan ke Google Sheet!");
         setScannedData(null);
-        setRawOCRText("");
       } else {
         alert("Gagal menyimpan: " + result.error);
       }
@@ -252,23 +280,20 @@ export default function Home() {
           </motion.div>
         ) : scannedData ? (
           /* REVIEW STATE */
-          <div className="w-full max-w-2xl flex flex-col gap-6">
-            <ExtractionResult
-              data={scannedData}
-              onSave={handleSaveToSheet}
-              onCancel={() => setScannedData(null)}
-            />
-            {rawOCRText && (
-              <div className="glass p-4 rounded-xl">
-                <details className="text-xs text-muted-foreground cursor-pointer">
-                  <summary className="font-medium hover:text-white transition-colors mb-2 select-none">
-                    Lihat Teks Asli (Debug OCR)
-                  </summary>
-                  <pre className="whitespace-pre-wrap bg-black/20 p-4 rounded-lg font-mono text-white/70 max-h-60 overflow-y-auto border border-white/5">
-                    {rawOCRText}
-                  </pre>
-                </details>
-              </div>
+          <div className="w-full flex justify-center">
+            {Array.isArray(scannedData) ? (
+              <BatchExtractionResult
+                data={scannedData}
+                headers={headers}
+                onSave={handleSaveToSheet}
+                onCancel={() => setScannedData(null)}
+              />
+            ) : (
+              <ExtractionResult
+                data={scannedData}
+                onSave={handleSaveToSheet}
+                onCancel={() => setScannedData(null)}
+              />
             )}
           </div>
         ) : (
@@ -300,7 +325,9 @@ export default function Home() {
                   <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
                   <Loader2 className="w-12 h-12 text-primary animate-spin relative z-10" />
                 </div>
-                <p className="text-lg font-medium text-white animate-pulse">Sedang Membaca Dokumen... {progress}%</p>
+                <p className="text-lg font-medium text-white animate-pulse">
+                  Memproses {processedFiles} dari {totalFiles} Dokumen... {progress}%
+                </p>
                 <p className="text-sm text-muted-foreground">AI sedang menganalisis konteks...</p>
                 {/* Progress Bar */}
                 <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden mt-2">
@@ -311,7 +338,7 @@ export default function Home() {
                 </div>
               </div>
             ) : (
-              <FileUpload onFileSelect={handleFileSelect} disabled={isProcessing} />
+              <FileUpload onFileSelect={(files) => handleFileSelect(files)} disabled={isProcessing} />
             )}
 
             {!isProcessing && (

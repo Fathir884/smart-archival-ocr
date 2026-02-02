@@ -1,9 +1,9 @@
 "use client";
 
 import { useSession, signIn, signOut } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, FileSpreadsheet, Loader2, LogOut } from "lucide-react";
+import { ArrowRight, FileSpreadsheet, Loader2, LogOut, ScanLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FileUpload } from "@/components/file-upload";
 import { ExtractionResult } from "@/components/extraction-result";
@@ -69,6 +69,42 @@ export default function Home() {
   };
 
 
+
+  const [isExtractingTemplate, setIsExtractingTemplate] = useState(false);
+  const templateInputRef = useRef<HTMLInputElement>(null);
+
+  const handleTemplateSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsExtractingTemplate(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/template/extract", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await res.json();
+
+      if (result.success && Array.isArray(result.headers)) {
+        setHeaders(result.headers);
+        alert(`Template Berhasil! Ditemukan ${result.headers.length} kolom: ${result.headers.join(", ")}`);
+      } else {
+        alert("Gagal membaca template: " + (result.error || "Unknown error"));
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error saat memproses template");
+    } finally {
+      setIsExtractingTemplate(false);
+      // Reset input
+      if (templateInputRef.current) {
+        templateInputRef.current.value = "";
+      }
+    }
+  };
 
   const [progress, setProgress] = useState(0);
   const [totalFiles, setTotalFiles] = useState(0);
@@ -319,7 +355,29 @@ export default function Home() {
             <div className="mb-6 w-full max-w-xl">
               <div className="glass px-4 py-3 rounded-xl flex items-center justify-between mb-2">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Target Kolom</span>
-                <span className="text-xs text-green-400 bg-green-400/10 px-2 py-0.5 rounded border border-green-400/20">Active</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => templateInputRef.current?.click()}
+                    disabled={isExtractingTemplate}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-medium text-white transition-all border border-white/10 hover:border-white/20"
+                    title="Upload screenshot tabel kosong/template untuk mendeteksi kolom secara otomatis"
+                  >
+                    {isExtractingTemplate ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
+                    ) : (
+                      <ScanLine className="w-3.5 h-3.5 text-accent" />
+                    )}
+                    {isExtractingTemplate ? "Analisa..." : "Scan Template"}
+                  </button>
+                  <input
+                    type="file"
+                    ref={templateInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleTemplateSelect}
+                  />
+                  <span className="text-xs text-green-400 bg-green-400/10 px-2 py-0.5 rounded border border-green-400/20">Active</span>
+                </div>
               </div>
               <div className="flex flex-wrap gap-2">
                 {headers.map((h, i) => (

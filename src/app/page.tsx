@@ -90,7 +90,24 @@ export default function Home() {
 
       if (result.success && Array.isArray(result.headers)) {
         setHeaders(result.headers);
-        alert(`Template Berhasil! Ditemukan ${result.headers.length} kolom: ${result.headers.join(", ")}`);
+
+        // Auto-save headers to the sheet so it persists for next time
+        if (url && sheetConnected) {
+          try {
+            await fetch("/api/sheet/update-headers", {
+              method: "POST",
+              body: JSON.stringify({ url, headers: result.headers }),
+              headers: { "Content-Type": "application/json" }
+            });
+            alert(`Template Berhasil! ${result.headers.length} kolom ditemukan DAN disimpan ke Spreadsheet. \n\nBesok-besok tinggal connect saja, tidak perlu scan template lagi! 😎`);
+          } catch (e) {
+            console.error("Failed to save headers to sheet", e);
+            alert(`Template Berhasil (${result.headers.length} kolom), tapi gagal menyimpan ke Sheet. Harap simpan manual nanti.`);
+          }
+        } else {
+          alert(`Template Berhasil! Ditemukan ${result.headers.length} kolom: ${result.headers.join(", ")}`);
+        }
+
       } else {
         alert("Gagal membaca template: " + (result.error || "Unknown error"));
       }

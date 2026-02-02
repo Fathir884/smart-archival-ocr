@@ -202,7 +202,7 @@ export default function Home() {
       {/* Creator Info (Top Left) */}
       <div className="absolute top-6 left-6 flex items-center gap-2 z-20">
         <div className="glass px-4 py-2 rounded-full border border-white/10">
-          <span className="text-sm text-white/60">Created by <span className="text-white font-medium">Fathir Ramadhan</span> <span className="text-xs text-purple-400 ml-1 border border-purple-500/30 px-1 rounded">v2.7 (Quota Saver)</span></span>
+          <span className="text-sm text-white/60">Created by <span className="text-white font-medium">Fathir Ramadhan</span> <span className="text-xs text-purple-400 ml-1 border border-purple-500/30 px-1 rounded">v2.8 (Template Scan)</span></span>
         </div>
       </div>
 
